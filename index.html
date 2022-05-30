@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OnePiece</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background-color: skyblue;
+      }
+      a {
+        text-decoration: none;
+      }
+      .outside {
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%);
+        width: 500px;
+        height: 280px;
+        overflow: hidden;
+      }
+      .left {
+        display: none;
+        position: absolute;
+        transform: translate(0, -50%);
+        top: 50%;
+        left: 0;
+        height: 35px;
+        line-height: 35px;
+        width: 25px;
+        text-align: center;
+        font-size: 20px;
+        color: #ffffffcc;
+        background: rgba(87, 216, 249, 0.8);
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+        z-index: 2;
+      }
+      .right {
+        display: none;
+        position: absolute;
+        transform: translate(0, -50%);
+        top: 50%;
+        right: 0;
+        height: 35px;
+        line-height: 35px;
+        width: 25px;
+        font-size: 20px;
+        color: #ffffffcc;
+        text-align: center;
+        background: rgba(87, 216, 249, 0.8);
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+        z-index: 2;
+      }
+      .flgule {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 800%;
+      }
+
+      ul li {
+        list-style-type: none;
+        float: left;
+      }
+      .flgule li img {
+        width: 500px;
+        height: 280px;
+      }
+      .dot {
+        position: absolute;
+        /* left: 50%;
+        transform: translate(-50%, 0); */
+        left: 25px;
+        bottom: 10px;
+        z-index: 2;
+        list-style-type: none;
+      }
+      .dot li {
+        width: 8px;
+        height: 8px;
+        border: 0.5px solid rgba(0, 0, 0, 0.05);
+        background: rgba(255, 255, 255, 0.3);
+        display: inline-block;
+        margin: 0 4px 0 4px;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+      .outside .dot .chosen {
+        background: rgba(87, 216, 249, 0.8);
+      }
+    </style>
+    <script src="./animate.js"></script>
+  </head>
+  <body>
+    <div class="outside">
+      <a href="javascript:;" class="left">&lt;</a>
+      <a href="javascript:;" class="right">&gt;</a>
+
+      <ul class="flgule">
+        <li><img src="./img/1.jpg" alt="" /></li>
+        <li><img src="./img/2.jpg" alt="" /></li>
+        <li><img src="./img/3.jpg" alt="" /></li>
+        <li><img src="./img/4.jpg" alt="" /></li>
+        <li><img src="./img/5.jpg" alt="" /></li>
+      </ul>
+      <ol class="dot"></ol>
+    </div>
+    <script>
+      //1.显示隐藏左右方向键
+      var left = document.querySelector(".left");
+      var right = document.querySelector(".right");
+      var outside = document.querySelector(".outside");
+      outside.addEventListener("mouseover", function () {
+        left.style.display = "block";
+        right.style.display = "block";
+        clearInterval(timer);
+        timer = null;
+      });
+      outside.addEventListener("mouseout", function () {
+        left.style.display = "none";
+        right.style.display = "none";
+        timer = setInterval(function () {
+          right.click();
+        }, 3000);
+      });
+
+      //2.动态生成小li圆圈
+      var ul = outside.querySelector(".flgule");
+      var ol = outside.querySelector("ol");
+      for (var i = 0; i < ul.children.length; i++) {
+        var li = document.createElement("li");
+        li.setAttribute("index", i);
+        ol.appendChild(li);
+        //3.给小圆圈设置点击事件
+        li.addEventListener("click", function () {
+          for (var i = 0; i < ol.children.length; i++) {
+            ol.children[i].className = "";
+          }
+          this.className = "chosen";
+          //4.点击小圆圈可以滚动图片ul
+          var liWidth = outside.offsetWidth;
+          var index = this.getAttribute("index");
+          num = index;
+          circle = index;
+          animate(ul, -index * liWidth);
+        });
+      }
+      ol.children[0].className = "chosen";
+      //6.科隆第一张图片，放到后面
+      var lastLi = ul.children[0].cloneNode(true);
+      ul.appendChild(lastLi);
+      //5.点击右边按钮滚动图片并且控制小圆圈播放
+      var num = 0;
+      //circle控制小圆圈的播放
+      var circle = 0;
+      var liWidth = outside.offsetWidth;
+      //设置节流阀
+      var flag = true;
+      right.addEventListener("click", function () {
+        if (flag) {
+          flag = false;
+          if (num == ul.children.length - 1) {
+            ul.style.left = 0;
+            num = 0;
+          }
+          num++;
+          animate(ul, -num * liWidth, function () {
+            flag = true;
+          });
+          circle++;
+          if (circle == ol.children.length) {
+            circle = 0;
+          }
+          for (var i = 0; i < ol.children.length; i++) {
+            ol.children[i].className = "";
+          }
+
+          ol.children[circle].className = "chosen";
+        }
+      });
+      //7.给左侧按钮设置点击事件
+      left.addEventListener("click", function () {
+        if (flag) {
+          flag = false;
+          if (num == 0) {
+            num = ul.children.length - 1;
+            ul.style.left = -num * liWidth + "px";
+          }
+          num--;
+          animate(ul, -num * liWidth, function () {
+            flag = true;
+          });
+          circle--;
+          if (circle == -1) {
+            circle = ol.children.length - 1;
+          }
+          for (var i = 0; i < ol.children.length; i++) {
+            ol.children[i].className = "";
+          }
+
+          ol.children[circle].className = "chosen";
+        }
+      });
+      //8.自动播放轮播图
+      var timer = setInterval(function () {
+        right.click();
+      }, 3000);
+    </script>
+  </body>
+</html>
